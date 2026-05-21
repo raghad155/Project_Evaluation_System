@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Student;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\StoreStudentRequest;
+use App\Imports\StudentsImport;
+use Maatwebsite\Excel\Facades\Excel;
 class StudentController extends Controller
 {
     public function index()
@@ -72,4 +74,18 @@ class StudentController extends Controller
             'message' => 'Student deleted successfully'
         ]);
     }
+
+    public function import(Request $request)
+{/*
+    $request->validate([
+    'file' => 'required'   ]);
+*/
+   // dd($request->file('file')); // 👈 هنا تحطيه
+
+    Excel::import(new StudentsImport, $request->file('file'));
+
+    return response()->json([
+        'message' => 'Students imported successfully'
+    ]);
+}
 }

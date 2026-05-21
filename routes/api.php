@@ -47,3 +47,4 @@ Route::middleware(['auth:sanctum', 'role:committee_head'])
     });
 
 Route::apiResource('students', StudentController::class);
+Route::post('students/import', [StudentController::class, 'import']);
