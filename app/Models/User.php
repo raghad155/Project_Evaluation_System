@@ -56,4 +56,8 @@ public function users()
 {
     return $this->belongsToMany(User::class);
 }
+public function evaluations()
+{
+    return $this->hasMany(Evaluation::class);
+}
 }

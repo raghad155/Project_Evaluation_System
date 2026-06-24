@@ -6,6 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SupervisorController;
+use App\Models\EvaluationCriteria;
+use App\Http\Controllers\EvaluationCriteriaController;
+use App\Http\Controllers\EvaluationController;
 
 
 
@@ -75,3 +78,26 @@ Route::put('/projects/{project}/change-student',
 
 Route::delete('/projects/{project}/remove-student/{student}',
     [ProjectController::class,'removeStudent']);
+
+Route::get('/evaluation-criteria', [EvaluationCriteriaController::class, 'index']);
+Route::post('/evaluation-criteria', [EvaluationCriteriaController::class, 'store']);
+Route::put('/evaluation-criteria/{id}', [EvaluationCriteriaController::class, 'update']);
+Route::delete('/evaluation-criteria/{id}', [EvaluationCriteriaController::class, 'destroy']);
+
+Route::get('/evaluations',[EvaluationController::class,'index']);
+
+Route::post('/evaluations',[EvaluationController::class,'store']);
+
+Route::put('/evaluations/{id}',[EvaluationController::class,'update']);
+
+Route::delete('/evaluations/{id}',[EvaluationController::class,'destroy']);
+
+Route::post(
+'/evaluation-scores',
+[EvaluationController::class,'storeScores']
+);
+
+Route::get(
+'/evaluations/{id}/final-score',
+[EvaluationController::class,'calculateFinalScore']
+);

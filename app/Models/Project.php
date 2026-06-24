@@ -29,4 +29,9 @@ protected $fillable = [
 {
     return $this->belongsTo(Specialization::class);
 }
-    }
+   
+public function evaluations()
+{
+    return $this->hasMany(Evaluation::class);
+}
+}
