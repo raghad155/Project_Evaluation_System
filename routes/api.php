@@ -6,7 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SupervisorController;
-use App\Models\EvaluationCriteria;
+//use App\Models\EvaluationCriteria;
 use App\Http\Controllers\EvaluationCriteriaController;
 use App\Http\Controllers\EvaluationController;
 
@@ -106,3 +106,15 @@ Route::get(
 Route::get('/evaluations/{evaluation}/students/{student}/final-score',
     [EvaluationController::class, 'finalScore']
 );
+Route::get('/projects/reports', function () {
+    return response()->json([
+        'status' => 'ROUTE WORKS'
+    ]);
+});
+Route::get('/projects/{id}/report', [EvaluationController::class, 'projectReport']);
+Route::get('/test', function () {
+    return "working";
+});
+Route::get('/projects/{id}/report', [EvaluationController::class, 'projectReport']);
+Route::get('/projects/with-evaluations', [EvaluationController::class, 'projectsWithEvaluations']);
+Route::get('/projects/{id}/final-scores', [EvaluationController::class, 'calculateFinalScores']);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\EvaluationScore;
 use App\Models\Evaluation;
 use Illuminate\Http\Request;
@@ -133,4 +134,167 @@ public function finalScore($evaluation_id, $student_id)
         'student_id' => $student_id,
         'final_score' => round($total, 2)
     ]);
-}}
+}
+
+public function projectReport($id)
+{
+    $project = Project::with([
+        'students',
+        'evaluations.scores.criteria'
+    ])->findOrFail($id);
+
+    $studentsReport = [];
+
+    foreach ($project->students as $student) {
+
+        $total = 0;
+        $scoresArray = [];
+
+        foreach ($project->evaluations as $evaluation) {
+
+            foreach ($evaluation->scores as $score) {
+
+                if ($score->student_id != $student->id) {
+                    continue;
+                }
+
+                $weighted = ($score->score * $score->criteria->weight) / 100;
+
+                $total += $weighted;
+
+                $scoresArray[] = [
+                    'criteria' => $score->criteria->name,
+                    'score' => $score->score,
+                    'weight' => $score->criteria->weight,
+                    'weighted_score' => round($weighted, 2)
+                ];
+            }
+        }
+
+        $studentsReport[] = [
+            'student_id' => $student->id,
+            'student_name' => $student->full_name,
+            'scores' => $scoresArray,
+            'final_score' => round($total, 2)
+        ];
+    }
+
+    return response()->json([
+        'project_id' => $project->id,
+        'project_title' => $project->title,
+        'students' => $studentsReport
+    ]);
+}
+
+
+public function allProjectsReport()
+{
+    $projects = Project::with(['students', 'evaluations'])->get();
+
+    $reports = [];
+
+    foreach ($projects as $project) {
+
+        $total = 0;
+        $count = $project->evaluations->count();
+
+        foreach ($project->evaluations as $evaluation) {
+            $total += $evaluation->final_score ?? 0;
+        }
+
+        $avg = $count > 0 ? $total / $count : 0;
+
+        $reports[] = [
+            'project_id' => $project->id,
+            'project_title' => $project->title,
+            'students_count' => $project->students->count(),
+            'average_score' => round($avg, 2)
+        ];
+    }
+
+    return response()->json($reports);
+}
+
+public function projectsWithEvaluations()
+{
+    $projects = Project::with([
+        'students',
+        'evaluations.scores.criteria'
+    ])->get();
+
+    $result = [];
+
+    foreach ($projects as $project) {
+
+        $evaluationsList = [];
+
+        foreach ($project->evaluations as $evaluation) {
+
+            $scores = [];
+
+            foreach ($evaluation->scores as $score) {
+                $scores[] = [
+                    'criteria' => $score->criteria->name,
+                    'score' => $score->score
+                ];
+            }
+
+            $evaluationsList[] = [
+                'evaluation_id' => $evaluation->id,
+                'student_id' => $evaluation->student_id ?? null,
+                'scores' => $scores
+            ];
+        }
+
+        $result[] = [
+            'project_id' => $project->id,
+            'project_title' => $project->title,
+            'students_count' => $project->students->count(),
+            'evaluations' => $evaluationsList
+        ];
+    }
+
+    return response()->json($result);
+}
+
+public function calculateFinalScores($id)
+{
+    $project = Project::with([
+        'students',
+        'evaluations.scores.criteria'
+    ])->findOrFail($id);
+
+    $results = [];
+
+    foreach ($project->students as $student) {
+
+        $total = 0;
+
+        foreach ($project->evaluations as $evaluation) {
+
+            foreach ($evaluation->scores as $score) {
+
+                if ($score->student_id != $student->id) {
+                    continue;
+                }
+
+                $weight = $score->criteria->weight ?? 0;
+
+                $total += ($score->score * $weight) / 100;
+            }
+        }
+
+        $results[] = [
+            'student_id' => $student->id,
+            'student_name' => $student->full_name,
+            'final_score' => round($total, 2)
+        ];
+    }
+
+    return response()->json([
+        'project_id' => $project->id,
+        'project_title' => $project->title,
+        'students' => $results
+    ]);
+}
+}
